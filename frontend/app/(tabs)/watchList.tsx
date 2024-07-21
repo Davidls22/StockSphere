@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, FlatList, Alert, Text, TouchableOpacity } from 'react-native';
+import { View, FlatList, Alert, Text } from 'react-native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { useUser } from '../../contexts/AuthContext';
@@ -14,26 +14,26 @@ export default function Watchlist() {
   const { setStock } = useContext(StockContext);
   const router = useRouter();
 
+  const fetchWatchlist = async () => {
+    if (!user) {
+      console.error('User is not logged in');
+      return;
+    }
+
+    try {
+      const response = await axios.get(`http://localhost:8080/api/watchlist/watchlists/${user.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log('Response from server:', response.data);
+      setWatchlist(response.data);
+    } catch (error) {
+      console.error('Failed to fetch watchlist:', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchWatchlist = async () => {
-      if (!user) {
-        console.error('User is not logged in');
-        return;
-      }
-
-      try {
-        const response = await axios.get(`http://localhost:8080/api/watchlist/watchlists/${user.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        console.log('Response from server:', response.data);
-        setWatchlist(response.data);
-      } catch (error) {
-        console.error('Failed to fetch watchlist:', error);
-      }
-    };
-
     fetchWatchlist();
   }, [user, token]);
 

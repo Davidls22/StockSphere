@@ -8,20 +8,23 @@ import watchlistRoutes from './routes/watchlistRoutes';
 import alertRoutes from './routes/alertRoutes';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
-import rateLimitMiddleware from './middleware/rateLimitMiddleware';
+import cron from 'node-cron';
+import { checkAlerts } from './controllers/alertController'
 
 
 dotenv.config();
 
 const app = express();
 
+cron.schedule('* * * * *', () => {
+    checkAlerts();
+  });
 
 connectDB().then(() => console.log('Database connected')).catch(err => console.error('Database connection error:', err));
 
 
 app.use(cors());
 app.use(express.json());
-app.use(rateLimitMiddleware);
 app.use(morgan('combined'));
 
 

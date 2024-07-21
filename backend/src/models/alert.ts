@@ -4,6 +4,7 @@ interface IAlert extends Document {
   user: mongoose.Schema.Types.ObjectId;
   symbol: string;
   targetPrice: number;
+  pushToken: string; 
 }
 
 const alertSchema: Schema<IAlert> = new Schema({
@@ -18,6 +19,10 @@ const alertSchema: Schema<IAlert> = new Schema({
   },
   targetPrice: {
     type: Number,
+    required: true,
+  },
+  pushToken: { 
+    type: String,
     required: true,
   },
 });

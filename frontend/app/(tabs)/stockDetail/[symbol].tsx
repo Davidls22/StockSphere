@@ -9,10 +9,12 @@ import { useUser } from '../../../contexts/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import tw from 'twrnc';
 import Header from '../../../components/Header';
+import * as Notifications from 'expo-notifications';
+import { registerForPushNotificationsAsync } from '../../../components/Notifications';
 
 const windowWidth = Dimensions.get('window').width;
 
-export default function StockDetail() {
+export default function StockDetail({ fetchWatchlist }) {
   const { stock } = useContext(StockContext);
   const { user, token } = useUser();
   const [timeSeries, setTimeSeries] = useState([]);
@@ -96,6 +98,11 @@ export default function StockDetail() {
         }
       );
 
+      // Fetch the updated watchlist and update the state
+      if (fetchWatchlist) {
+        fetchWatchlist();
+      }
+
       console.log('Stock added to watchlist successfully');
     } catch (error) {
       console.error('Failed to add stock to watchlist:', error.message);
@@ -116,7 +123,13 @@ export default function StockDetail() {
       return;
     }
     try {
-      await axios.post('http://localhost:8080/api/alerts', { userId: user?.id, symbol: stock.symbol, targetPrice: parseFloat(targetPrice) }, {
+      const pushToken = await registerForPushNotificationsAsync();
+      await axios.post('http://localhost:8080/api/alerts', {
+        userId: user?.id,
+        symbol: stock.symbol,
+        targetPrice: parseFloat(targetPrice),
+        pushToken 
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       Alert.alert('Success', 'Alert set successfully');
@@ -144,6 +157,7 @@ export default function StockDetail() {
       Alert.alert('Error', 'Failed to add stock to portfolio');
     }
   };
+
 
   return (
     <ScrollView style={tw`flex-1 p-2 bg-[#1a1a1a]`}>
