@@ -25,10 +25,6 @@ const WatchlistItem = ({ stock, onRemove, onSelect }) => {
           {stock.priceChange.toFixed(2)} ({stock.priceChangePercentage.toFixed(2)}%)
         </Text>
       )}
-      <Text style={tw`text-sm text-gray-400`}>Day's Range: {stock.daysRange}</Text>
-      <Text style={tw`text-sm text-gray-400`}>52-Week Range: {stock.weekRange}</Text>
-      <Text style={tw`text-sm text-gray-400`}>Market Cap: {stock.marketCap}</Text>
-      <Text style={tw`text-sm text-gray-400`}>Volume: {stock.volume}</Text>
     </TouchableOpacity>
   );
 };

@@ -29,14 +29,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="alerts"
-        options={{
-          title: 'Alerts',
-          tabBarIcon: ({ color }) => <TabBarIcon name="bell" color={color} />,
-          headerShown: false, 
-        }}
-      />
-      <Tabs.Screen
         name="watchList"
         options={{
           title: 'Watch List',

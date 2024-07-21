@@ -1,24 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { useUser } from '../../contexts/AuthContext';
 import Header from '@/components/Header';
-import tw from 'twrnc'; 
+import tw from 'twrnc';
 
 interface Stock {
   symbol: string;
   quantity: number;
-  currentPrice: number;
+  currentPrice?: number;
 }
 
 interface Portfolio {
   _id: string;
-  user: string;
+  user: { _id: string; username: string };
   stocks: Stock[];
 }
 
 export default function PortfolioDetails() {
-  const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const { user, token } = useUser();
 
@@ -37,24 +37,9 @@ export default function PortfolioDetails() {
         });
         console.log('Portfolio data:', response.data);
 
-        if (response.data.length > 0) {
-          const portfolioData = response.data[0]; 
-          const updatedStocks = await Promise.all(portfolioData.stocks.map(async (stock: Stock) => {
-            const stockResponse = await axios.get('https://www.alphavantage.co/query', {
-              params: {
-                function: 'GLOBAL_QUOTE',
-                symbol: stock.symbol,
-                apikey: process.env.ALPHA_VANTAGE_API_KEY,
-              },
-            });
-            const currentPrice = parseFloat(stockResponse.data['Global Quote']['05. price']);
-            return { ...stock, currentPrice };
-          }));
-          setPortfolio({ ...portfolioData, stocks: updatedStocks });
-        } else {
-          console.log('No portfolio found for the user');
-          setPortfolio(null);
-        }
+        // Directly use the portfolio data from backend
+        const fetchedPortfolios = response.data;
+        setPortfolios(fetchedPortfolios);
       } catch (error) {
         console.error('Failed to fetch portfolio:', error);
       } finally {
@@ -64,6 +49,21 @@ export default function PortfolioDetails() {
 
     fetchPortfolio();
   }, [user, token]);
+
+  const handleRemoveStock = async (portfolioId: string, stockSymbol: string) => {
+    try {
+      const response = await axios.delete(`http://localhost:8080/api/portfolios/${portfolioId}/stocks/${stockSymbol}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // Update the portfolio state with the modified portfolio
+      const updatedPortfolios = portfolios.map(portfolio =>
+        portfolio._id === portfolioId ? response.data : portfolio
+      );
+      setPortfolios(updatedPortfolios);
+    } catch (error) {
+      console.error('Failed to remove stock from portfolio:', error);
+    }
+  };
 
   if (loading) {
     return (
@@ -77,7 +77,7 @@ export default function PortfolioDetails() {
     );
   }
 
-  if (!portfolio) {
+  if (portfolios.length === 0) {
     return (
       <View style={tw`flex-1 p-2 bg-[#1a1a1a]`}>
         <Header />
@@ -88,7 +88,11 @@ export default function PortfolioDetails() {
     );
   }
 
-  const totalValue = portfolio.stocks.reduce((acc, stock) => acc + stock.quantity * stock.currentPrice, 0);
+  const totalValue = portfolios.reduce((acc, portfolio) => 
+    acc + portfolio.stocks.reduce((acc, stock) => 
+      acc + (stock.quantity * (stock.price || 0)), 0
+    ), 0
+  );
 
   return (
     <View style={tw`flex-1 p-2 bg-[#1a1a1a]`}>
@@ -96,14 +100,24 @@ export default function PortfolioDetails() {
       <View style={tw`flex-1 p-4`}>
         <Text style={tw`text-2xl font-bold text-white mb-4`}>Portfolio Details</Text>
         <FlatList
-          data={portfolio.stocks}
-          keyExtractor={(item) => item.symbol}
+          data={portfolios}
+          keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
             <View style={tw`p-4 border-b border-gray-600 mb-4`}>
-              <Text style={tw`text-xl font-bold text-white`}>{item.symbol}</Text>
-              <Text style={tw`text-white`}>Quantity: {item.quantity}</Text>
-              <Text style={tw`text-white`}>Current Price: ${item.currentPrice.toFixed(2)}</Text>
-              <Text style={tw`text-white`}>Total Value: ${(item.quantity * item.currentPrice).toFixed(2)}</Text>
+              {item.stocks.map((stock, index) => (
+                <View key={index} style={tw`mb-4`}>
+                  <Text style={tw`text-xl font-bold text-white`}>{stock.symbol}</Text>
+                  <Text style={tw`text-white`}>Quantity: {stock.quantity}</Text>
+                  <Text style={tw`text-white`}>Current Price: ${stock.price ? stock.price.toFixed(2) : 'N/A'}</Text>
+                  <Text style={tw`text-white`}>Total Value: ${(stock.quantity * (stock.price || 0)).toFixed(2)}</Text>
+                  <TouchableOpacity
+                    style={tw`bg-red-600 p-2 rounded-lg mt-2`}
+                    onPress={() => handleRemoveStock(item._id, stock.symbol)}
+                  >
+                    <Text style={tw`text-white text-center font-bold`}>Remove</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
             </View>
           )}
         />
