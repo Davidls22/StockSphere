@@ -3,6 +3,10 @@
 
 StockSphere is a comprehensive financial analysis tracking app designed to help users monitor their stock investments and stay updated with the latest market trends. The app features user authentication, stock tracking, portfolio management, and alert notifications, making it a robust tool for both novice and experienced investors.
 
+
+## Demo Video
+https://github.com/Davidls22/StockSphere/releases/tag/demo
+
 ## Table of Contents
 - [Features](#features)
 - [Technologies Used](#technologies-used)
