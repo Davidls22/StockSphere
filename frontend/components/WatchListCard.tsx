@@ -7,7 +7,11 @@ const WatchlistItem = ({ stock, onRemove, onSelect }) => {
   const router = useRouter();
 
   return (
-    <TouchableOpacity style={tw`bg-[#2a2a2a] p-4 mb-2 rounded-lg shadow-md`} onPress={() => onSelect(stock)}>
+    <TouchableOpacity
+      key={stock._id} 
+      style={tw`bg-[#2a2a2a] p-4 mb-2 rounded-lg shadow-md`}
+      onPress={() => onSelect(stock)}
+    >
       <View style={tw`flex-row justify-between items-center`}>
         <View>
           <Text style={tw`text-lg font-bold text-white`}>{stock.symbol}</Text>

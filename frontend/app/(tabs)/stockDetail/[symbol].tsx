@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useMemo } from 'react';
-import { View, Text, Dimensions, ScrollView, TextInput, TouchableOpacity, Alert, Switch, Image } from 'react-native';
+import { View, Text, Dimensions, ScrollView, TextInput, TouchableOpacity, Alert, Switch, Image, Linking } from 'react-native';
 import { AreaChart, Grid, XAxis, YAxis } from 'react-native-svg-charts';
 import * as shape from 'd3-shape';
 import StockContext from '../../../contexts/StockContext';
@@ -9,8 +9,6 @@ import { useUser } from '../../../contexts/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import tw from 'twrnc';
 import Header from '../../../components/Header';
-import * as Notifications from 'expo-notifications';
-import { registerForPushNotificationsAsync } from '../../../components/Notifications';
 import * as scale from 'd3-scale';
 
 const windowWidth = Dimensions.get('window').width;
@@ -37,7 +35,7 @@ export default function StockDetail({ fetchWatchlist }) {
           if (data && data.data && data.data['Time Series (Daily)']) {
             const historicalData = data.data['Time Series (Daily)'];
             const formattedData = Object.keys(historicalData).map((date) => ({
-              date,
+              date: new Date(date),  // Ensure date is converted to a Date object
               y: parseFloat(historicalData[date]['4. close']),
             }));
             setTimeSeries(formattedData);
@@ -58,7 +56,7 @@ export default function StockDetail({ fetchWatchlist }) {
           const axiosHistoricalData = historicalResponse.data['Time Series (Daily)'];
           if (axiosHistoricalData) {
             const axiosFormattedData = Object.keys(axiosHistoricalData).map((date) => ({
-              date,
+              date: new Date(date),  // Ensure date is converted to a Date object
               y: parseFloat(axiosHistoricalData[date]['4. close']),
             }));
             setHistoricalSeries(axiosFormattedData);
@@ -134,11 +132,11 @@ export default function StockDetail({ fetchWatchlist }) {
 
   const getKeyDates = useMemo(() => {
     const data = isHistorical ? historicalSeries : timeSeries;
-    if (data.length <= 4) return data.map((d) => d.date);
+    if (data.length <= 4) return data.map((d) => new Date(d.date));
     return [
-      data[0].date, // First date
-      data[Math.floor(data.length / 2)].date, // Middle date
-      data[data.length - 1].date // Last date
+      new Date(data[0].date), // First date
+      new Date(data[Math.floor(data.length / 2)].date), // Middle date
+      new Date(data[data.length - 1].date) // Last date
     ];
   }, [isHistorical, historicalSeries, timeSeries]);
 
@@ -186,14 +184,13 @@ export default function StockDetail({ fetchWatchlist }) {
                 curve={shape.curveNatural}
                 svg={{ fill: isHistorical ? 'rgba(65, 134, 244, 0.8)' : 'rgba(134, 65, 244, 0.8)' }}
               >
-                <Grid />
               </AreaChart>
               <XAxis
                 style={{ marginHorizontal: -5 }}
-                data={getKeyDates}
-                xAccessor={({ item }) => new Date(item)}
+                data={getKeyDates}  // Use dates array here
+                xAccessor={({ item }) => item}  // Use the date objects directly
                 scale={scale.scaleTime}
-                formatLabel={(value) => new Date(value).toLocaleDateString()}
+                formatLabel={(value) => new Date(value).toLocaleDateString()}  // Format the date labels
                 contentInset={{ left: 30, right: 30 }}
                 svg={{ fontSize: 10, fill: 'white' }}
               />
@@ -217,16 +214,6 @@ export default function StockDetail({ fetchWatchlist }) {
               </TouchableOpacity>
             </>
           )}
-          <View style={tw`mb-4`}>
-            <TextInput
-              style={tw`h-12 border border-gray-300 rounded-lg mb-4 px-4 text-white`}
-              placeholder="Target Price"
-              placeholderTextColor="#888888"
-              value={targetPrice}
-              onChangeText={setTargetPrice}
-              keyboardType="numeric"
-            />
-          </View>
           <View style={tw`mt-4`}>
             <Text style={tw`text-2xl font-bold text-white mb-4`}>Latest News</Text>
             {news.slice(0, 3).map((article, index) => (

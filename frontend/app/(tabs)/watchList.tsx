@@ -67,9 +67,10 @@ export default function Watchlist() {
       {watchlist.length === 0 ? (
         <Text style={tw`text-white text-center`}>No stocks in your watchlist.</Text>
       ) : (
-        watchlist.map(watchlist => (
+        watchlist.map((watchlistItem, index) => (
           <FlatList
-            data={watchlist.stocks}
+            key={index}  
+            data={watchlistItem.stocks}
             keyExtractor={(item) => item._id}
             renderItem={({ item }) => (
               <WatchlistItem stock={item} onRemove={handleRemove} onSelect={handleStockSelect} />

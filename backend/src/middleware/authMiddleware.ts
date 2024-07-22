@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/user';
 
-// Ensure the type extension for Express is in place (usually in a types.d.ts file)
 declare module 'express-serve-static-core' {
   interface Request {
     userId?: string;
@@ -24,8 +23,8 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwt.JwtPayload;
     console.log('Decoded Token:', decoded);
 
-    if (decoded.userId) {
-      req.userId = decoded.userId;
+    if (decoded.id) {  
+      req.userId = decoded.id;
       console.log('User ID from Token:', req.userId);
 
       const user = await User.findById(req.userId);
