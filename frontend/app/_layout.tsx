@@ -6,6 +6,7 @@ import { Stack, Slot } from 'expo-router';
 import { UserProvider } from '../contexts/AuthContext';
 import { StockProvider } from '../contexts/StockContext';
 import Toast from 'react-native-toast-message';
+import Onboarding from '../components/Onboarding'
 
 SplashScreen.preventAutoHideAsync();
 
@@ -15,6 +16,7 @@ export default function RootLayout() {
   });
 
   const [isSplashReady, setSplashReady] = useState(false);
+  const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
 
   useEffect(() => {
     if (error) throw error;
@@ -39,6 +41,14 @@ export default function RootLayout() {
 
   if (!isSplashReady) {
     return null;
+  }
+
+  const handleOnboardingFinish = () => {
+    setIsOnboardingComplete(true);
+  };
+
+  if (!isOnboardingComplete) {
+    return <Onboarding onFinish={handleOnboardingFinish} />;
   }
 
   return <RootLayoutNav />;
