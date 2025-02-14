@@ -1,28 +1,22 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
-import axios from 'axios';
-import { useUser } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
+import { Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { useState } from 'react';
+import { useAuth } from '../../hooks/useAuth';
 import tw from 'twrnc';
 
 export default function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { signIn } = useUser();
+  const { register } = useAuth();
   const router = useRouter();
 
   const handleRegister = async () => {
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/register', { username, password });
-      signIn(response.data.token, { id: response.data.user.id, username: response.data.user.username });
-      router.push('/');
+      await register(username, password);
+      router.replace('/');
     } catch (error) {
-      console.error('Failed to register:', error);
+      console.error('Registration failed:', error);
     }
-  };
-
-  const navigateToLogin = () => {
-    router.push('/login');
   };
 
   return (
@@ -46,16 +40,10 @@ export default function Register() {
         secureTextEntry
       />
       <TouchableOpacity
-        style={tw`bg-blue-600 p-3 rounded-lg mb-4 w-full`}
+        style={tw`bg-green-600 p-3 rounded-lg mb-4 w-full`}
         onPress={handleRegister}
       >
         <Text style={tw`text-white text-center font-bold`}>Register</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={tw`bg-green-600 p-3 rounded-lg w-full`}
-        onPress={navigateToLogin}
-      >
-        <Text style={tw`text-white text-center font-bold`}>Go to Login</Text>
       </TouchableOpacity>
     </View>
   );

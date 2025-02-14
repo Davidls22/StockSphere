@@ -1,47 +1,22 @@
 import { useRouter } from 'expo-router';
 import { Text, View, TextInput, TouchableOpacity } from 'react-native';
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useUser } from '../../contexts/AuthContext';
-import tw from 'twrnc'; 
+import { useState } from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import tw from 'twrnc';
 
 export default function SignIn() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { signIn } = useUser();
+  const { login } = useAuth();
   const router = useRouter();
 
   const handleSignIn = async () => {
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/login', { username, password });
-      if (response.status === 200) {
-        const { token, user } = response.data;
-        console.log('Login successful. User data:', user); 
-        signIn(token, user); 
-        router.replace('/');
-      } else {
-        console.error('Failed to sign in: Invalid response status');
-      }
+      await login(username, password);
+      router.replace('/');
     } catch (error) {
-      if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        console.error('Response data:', error.response.data);
-        console.error('Response status:', error.response.status);
-        console.error('Response headers:', error.response.headers);
-      } else if (error.request) {
-        // The request was made but no response was received
-        console.error('Request data:', error.request);
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        console.error('Error message:', error.message);
-      }
-      console.error('Failed to sign in:', error.config);
+      console.error('Login failed:', error);
     }
-  };
-
-  const navigateToRegister = () => {
-    router.push('/register');
   };
 
   return (
@@ -69,12 +44,6 @@ export default function SignIn() {
         onPress={handleSignIn}
       >
         <Text style={tw`text-white text-center font-bold`}>Sign In</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={tw`bg-green-600 p-3 rounded-lg w-full`}
-        onPress={navigateToRegister}
-      >
-        <Text style={tw`text-white text-center font-bold`}>Register</Text>
       </TouchableOpacity>
     </View>
   );

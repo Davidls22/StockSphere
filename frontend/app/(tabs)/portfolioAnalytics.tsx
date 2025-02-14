@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { useUser } from '../../contexts/AuthContext';
+import { fetchPortfolio } from '../../services/api';
 import Header from '@/components/Header';
 import tw from 'twrnc';
+import { removeStockFromPortfolio } from '../../services/api';
 
 interface Stock {
   symbol: string;
@@ -23,21 +25,17 @@ export default function PortfolioDetails() {
   const { user, token } = useUser();
 
   useEffect(() => {
-    const fetchPortfolio = async () => {
+    const fetchUserPortfolio = async () => {
       if (!user) {
         console.log('No user available');
         setLoading(false);
         return;
       }
-
+  
       try {
-        const response = await axios.get(`http://localhost:8080/api/portfolios`, {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { userId: user.id },
-        });
+        const response = await fetchPortfolio(user.id);
         console.log('Portfolio data:', response.data);
-
-        // Directly use the portfolio data from backend
+  
         const fetchedPortfolios = response.data;
         setPortfolios(fetchedPortfolios);
       } catch (error) {
@@ -46,18 +44,16 @@ export default function PortfolioDetails() {
         setLoading(false);
       }
     };
-
-    fetchPortfolio();
-  }, [user, token]);
+  
+    fetchUserPortfolio();
+  }, [user]);
 
   const handleRemoveStock = async (portfolioId: string, stockSymbol: string) => {
     try {
-      const response = await axios.delete(`http://localhost:8080/api/portfolios/${portfolioId}/stocks/${stockSymbol}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const updatedPortfolio = await removeStockFromPortfolio(portfolioId, stockSymbol);
       // Update the portfolio state with the modified portfolio
-      const updatedPortfolios = portfolios.map(portfolio =>
-        portfolio._id === portfolioId ? response.data : portfolio
+      const updatedPortfolios = portfolios.map((portfolio) =>
+        portfolio._id === portfolioId ? updatedPortfolio : portfolio
       );
       setPortfolios(updatedPortfolios);
     } catch (error) {

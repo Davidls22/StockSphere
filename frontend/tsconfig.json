@@ -3,10 +3,10 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@/*": [
-        "./*"
-      ]
-    }
+      "@/*": ["./*"]
+    },
+    "jsx": "react-native",
+    "lib": ["es2015", "dom"] 
   },
   "include": [
     "**/*.ts",
