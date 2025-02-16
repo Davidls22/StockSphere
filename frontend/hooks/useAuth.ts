@@ -6,9 +6,7 @@ export const useAuth = () => {
 
   const login = async (username: string, password: string) => {
     try {
-      const response = await loginUser(username, password);
-      const { token, user } = response.data;
-
+      const { token, user } = await loginUser(username, password);
       setAuthToken(token);
       signIn(token, user);
     } catch (error) {
@@ -19,9 +17,7 @@ export const useAuth = () => {
 
   const register = async (username: string, password: string) => {
     try {
-      const response = await registerUser(username, password);
-      const { token, user } = response.data;
-
+      const { token, user } = await registerUser(username, password);
       setAuthToken(token);
       signIn(token, user);
     } catch (error) {
