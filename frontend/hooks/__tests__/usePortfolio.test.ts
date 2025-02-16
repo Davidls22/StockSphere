@@ -1,11 +1,9 @@
-// usePortfolio.test.ts
 import { renderHook, act } from '@testing-library/react-hooks';
 import { waitFor } from '@testing-library/react-native';
 import usePortfolio from '../../hooks/usePortfolio';
 import { fetchPortfolio, removeStockFromPortfolio } from '../../services/api';
 import { useUser } from '../../contexts/AuthContext';
 
-// Mock the API functions and AuthContext hook
 jest.mock('../../services/api', () => ({
   fetchPortfolio: jest.fn(),
   removeStockFromPortfolio: jest.fn(),
@@ -21,11 +19,9 @@ describe('usePortfolio hook', () => {
   });
 
   it('should set loading to false if no user is provided', async () => {
-    // Simulate no user in the context
     (useUser as jest.Mock).mockReturnValue({ user: null });
     const { result } = renderHook(() => usePortfolio());
 
-    // Wait until loading becomes false
     await waitFor(() => result.current.loading === false);
 
     expect(result.current.loading).toBe(false);
@@ -54,7 +50,6 @@ describe('usePortfolio hook', () => {
     expect(fetchPortfolio).toHaveBeenCalledWith('user1');
     expect(result.current.portfolios).toEqual(mockPortfolios);
     expect(result.current.loading).toBe(false);
-    // Total value: (10 * 150) + (5 * 200) = 1500 + 1000 = 2500
     expect(result.current.totalValue).toEqual(2500);
   });
 
@@ -64,7 +59,6 @@ describe('usePortfolio hook', () => {
     const error = new Error('Fetch error');
     (fetchPortfolio as jest.Mock).mockRejectedValue(error);
 
-    // Suppress the expected console.error output during this test
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
     const { result } = renderHook(() => usePortfolio());
@@ -91,7 +85,6 @@ describe('usePortfolio hook', () => {
       _id: 'portfolio1',
       user: { _id: 'user1', username: 'testuser' },
       stocks: [
-        // AAPL has been removed
         { symbol: 'GOOG', quantity: 5, currentPrice: 200 },
       ],
     };
@@ -109,7 +102,6 @@ describe('usePortfolio hook', () => {
 
     expect(removeStockFromPortfolio).toHaveBeenCalledWith('portfolio1', 'AAPL');
     expect(result.current.portfolios).toEqual([updatedPortfolio]);
-    // Total value after removal: (5 * 200) = 1000
     expect(result.current.totalValue).toEqual(1000);
   });
 });
