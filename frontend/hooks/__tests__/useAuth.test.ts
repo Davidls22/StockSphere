@@ -1,4 +1,3 @@
-// useAuth.test.ts
 import { renderHook, act } from '@testing-library/react-hooks';
 import { useAuth } from '../../hooks/useAuth'; 
 import { useUser } from '../../contexts/AuthContext';

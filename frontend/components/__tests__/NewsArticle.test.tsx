@@ -13,7 +13,6 @@ describe('NewsArticle component', () => {
       error: null,
     });
     const { queryByText, getByTestId } = render(<NewsArticle />);
-    // Expect no article title or error text
     expect(queryByText(/Read more/i)).toBeNull();
   });
 
