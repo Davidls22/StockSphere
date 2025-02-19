@@ -3,7 +3,6 @@ import Portfolio from '../models/portfolio';
 import axios from 'axios';
 import mongoose, { Types } from 'mongoose';
 
-// Define the Stock interface
 interface Stock {
   symbol: string;
   quantity: number;
@@ -11,7 +10,6 @@ interface Stock {
   date?: string;
 }
 
-// Function to fetch stock price
 const fetchStockPrice = async (symbol: string): Promise<number | null> => {
     try {
       const response = await axios.get('https://www.alphavantage.co/query', {
@@ -21,7 +19,7 @@ const fetchStockPrice = async (symbol: string): Promise<number | null> => {
           apikey: process.env.ALPHA_VANTAGE_API_KEY,
         },
       });
-      console.log(`Response for symbol ${symbol}:`, response.data); // Add this log
+      console.log(`Response for symbol ${symbol}:`, response.data); 
       const stockData = response.data['Global Quote'];
       const currentPrice = parseFloat(stockData['05. price']);
       return isNaN(currentPrice) ? null : currentPrice;
@@ -31,7 +29,6 @@ const fetchStockPrice = async (symbol: string): Promise<number | null> => {
     }
   };
 
-// Function to get portfolios
 const createPortfolio = async (req: Request, res: Response) => {
     try {
       const { userId, stocks }: { userId: string; stocks: Stock[] } = req.body;
@@ -47,7 +44,7 @@ const createPortfolio = async (req: Request, res: Response) => {
         return {
           ...stock,
           price: currentPrice,
-          date: new Date().toISOString().split('T')[0], // Set to today's date
+          date: new Date().toISOString().split('T')[0], 
         };
       }));
   
@@ -77,7 +74,7 @@ const createPortfolio = async (req: Request, res: Response) => {
           return {
             ...stock.toObject(),
             price: currentPrice,
-            date: new Date().toISOString().split('T')[0], // Update to today's date
+            date: new Date().toISOString().split('T')[0], 
           };
         }));
         portfolio.stocks = updatedStocks;
@@ -93,7 +90,6 @@ const createPortfolio = async (req: Request, res: Response) => {
   };
   
 
-// Function to get portfolio analytics
 const getPortfolioAnalytics = async (req: Request, res: Response) => {
   try {
     const userId = req.query.userId || req.body.userId;
