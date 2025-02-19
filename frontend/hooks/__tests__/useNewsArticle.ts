@@ -46,7 +46,6 @@ describe('useNewsArticle hook', () => {
 
     const { result } = renderHook(() => useNewsArticle());
 
-    // Wait until loading is false and the error state has been updated.
     await waitFor(() => result.current.loading === false);
     await waitFor(() => result.current.error !== null);
 

@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { fetchPortfolio, removeStockFromPortfolio } from '../services/api';
 import { useUser } from '../contexts/AuthContext';
 
 interface Stock {
   symbol: string;
   quantity: number;
-  currentPrice?: number;
+  price?: number;
 }
 
 interface Portfolio {
@@ -19,32 +19,31 @@ export default function usePortfolio() {
   const [loading, setLoading] = useState<boolean>(true);
   const { user } = useUser();
 
-  useEffect(() => {
-    const fetchUserPortfolio = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-      try {
-        const portfolios = await fetchPortfolio(user.id);
-        setPortfolios(portfolios);
-      } catch (error) {
-        console.error('Failed to fetch portfolio:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserPortfolio();
+  const fetchUserPortfolio = useCallback(async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const data = await fetchPortfolio(user.id);
+      setPortfolios(data);
+    } catch (error) {
+      console.error('Failed to fetch portfolio:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
+
+  useEffect(() => {
+    fetchUserPortfolio();
+  }, [fetchUserPortfolio]);
 
   const removeStock = async (portfolioId: string, stockSymbol: string) => {
     try {
       const updatedPortfolio = await removeStockFromPortfolio(portfolioId, stockSymbol);
-      setPortfolios((prevPortfolios) =>
-        prevPortfolios.map((portfolio) =>
-          portfolio._id === portfolioId ? updatedPortfolio : portfolio
-        )
+      setPortfolios((prev) =>
+        prev.map((p) => (p._id === portfolioId ? updatedPortfolio : p))
       );
     } catch (error) {
       console.error('Failed to remove stock:', error);
@@ -55,11 +54,11 @@ export default function usePortfolio() {
     (acc, portfolio) =>
       acc +
       portfolio.stocks.reduce(
-        (sum, stock) => sum + (stock.quantity * (stock.currentPrice || 0)),
+        (sum, stock) => sum + (stock.quantity * (stock.price || 0)),
         0
       ),
     0
   );
 
-  return { portfolios, loading, removeStock, totalValue };
+  return { portfolios, loading, removeStock, totalValue, fetchUserPortfolio };
 }
