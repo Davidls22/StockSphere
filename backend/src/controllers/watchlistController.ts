@@ -13,7 +13,7 @@ const createWatchlist = async (req: Request, res: Response) => {
     let stock = await Stock.findOne({ symbol: stockId });
     if (!stock) {
 
-      const stockDataResponse = await axios.get(`http://externalapi.com/stocks/${stockId}`);
+      const stockDataResponse = await axios.get(`http://localhost:8080/stocks/${stockId}`);
       const stockData = stockDataResponse.data;
       stock = new Stock({ symbol: stockId, data: stockData });
       await stock.save();

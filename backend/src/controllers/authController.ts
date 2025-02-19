@@ -14,7 +14,7 @@ declare global {
 const generateToken = (user: any) => {
   const payload = { id: user._id, username: user.username };
   const secret = process.env.JWT_SECRET;
-  const options = { expiresIn: '1h' };
+  const options = { expiresIn: '1h' as const };
 
   return jwt.sign(payload, secret, options);
 };
