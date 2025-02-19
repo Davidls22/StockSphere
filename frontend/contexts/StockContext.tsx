@@ -1,5 +1,5 @@
 
-import React, { createContext, useState, ReactNode } from 'react';
+import { createContext, useState, ReactNode, useContext } from 'react';
 
 
 interface StockContextType {
@@ -23,5 +23,7 @@ export const StockProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     </StockContext.Provider>
   );
 };
+
+export const useStockContext = () => useContext(StockContext);
 
 export default StockContext;
